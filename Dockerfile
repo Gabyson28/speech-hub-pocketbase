@@ -1,0 +1,33 @@
+FROM alpine:3 as downloader
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG VERSION=0.35.1
+
+ENV BUILDX_ARCH="${TARGETOS:-linux}_${TARGETARCH:-amd64}"
+
+# Install dependencies required to download PocketBase
+RUN apk add --no-cache \
+    ca-certificates \
+    unzip \
+    wget \
+    zlib-dev
+
+# Download and extract PocketBase
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${VERSION}/pocketbase_${VERSION}_${BUILDX_ARCH}.zip \
+    && unzip pocketbase_${VERSION}_${BUILDX_ARCH}.zip \
+    && chmod +x /pocketbase
+
+# Final minimal container
+FROM scratch
+
+EXPOSE 8090
+
+# Copy PocketBase binary into final image
+COPY --from=downloader /pocketbase /usr/local/bin/pocketbase
+
+# Copy ONLY what you actually have
+COPY pb_migrations /pb_migrations
+COPY pb_data /pb_data
+
+CMD ["/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb_data"]
