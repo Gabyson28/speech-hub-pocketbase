@@ -1,11 +1,23 @@
 // contacts.pb.js
 // Endpoint: POST /api/contact
 
+const CONTACTS_HOOK_VERSION = "2026-02-21-debug-1";
+console.log("[hooks] contacts.pb.js loaded:", CONTACTS_HOOK_VERSION);
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
+
+// Sentinel route to verify that custom JS hooks are really loaded.
+routerAdd("GET", "/api/_debug/hooks", (c) => {
+  return c.json(200, {
+    ok: true,
+    hook: "contacts.pb.js",
+    version: CONTACTS_HOOK_VERSION,
+  });
+});
 
 // Handle CORS preflight
 routerAdd("OPTIONS", "/api/contact", (c) => {
