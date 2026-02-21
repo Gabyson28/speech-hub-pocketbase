@@ -3,7 +3,7 @@
 // Template functions (emailLayout, contactAdmin, contactUserEn, contactUserEs)
 // are defined globally in templates.pb.js (auto-loaded by PocketBase)
 
-const getSender = () => {
+function getSender() {
   const settings = $app.settings();
   const meta = settings && settings.meta ? settings.meta : {};
   const senderAddress = config.fromEmail || meta.senderAddress;
@@ -20,18 +20,18 @@ const getSender = () => {
     sender.name = senderName;
   }
   return sender;
-};
+}
 
-const stripHtml = (html) => {
+function stripHtml(html) {
   return String(html || "")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-};
+}
 
-const sendEmail = (to, subject, html, replyTo, text) => {
+function sendEmail(to, subject, html, replyTo, text) {
   const payload = {
     from: getSender(),
     to: [{ address: to }],
@@ -46,9 +46,9 @@ const sendEmail = (to, subject, html, replyTo, text) => {
 
   const message = new MailerMessage(payload);
   $app.newMailClient().send(message);
-};
+}
 
-const sendContactEmails = (name, email, phone, message, lang) => {
+function sendContactEmails(name, email, phone, message, lang) {
   const adminEmail = config.adminEmail;
   if (!adminEmail) {
     throw new Error("Missing MAIL_ADMIN environment variable.");
@@ -68,4 +68,4 @@ const sendContactEmails = (name, email, phone, message, lang) => {
   const userSubject = lang === "es" ? "Recibimos tu mensaje" : "We received your message";
   const userHtml = emailLayout(userContent, lang);
   sendEmail(email, userSubject, userHtml);
-};
+}

@@ -1,11 +1,11 @@
 // contacts.pb.js
 // Endpoint: POST /api/speech-hub/contact
 
-const CONTACTS_HOOK_VERSION = "2026-02-21-debug-1";
+var CONTACTS_HOOK_VERSION = "2026-02-21-debug-1";
 console.log("[hooks] contacts.pb.js loaded:", CONTACTS_HOOK_VERSION);
-const API_PREFIX = "/api/speech-hub";
+var API_PREFIX = "/api/speech-hub";
 
-const CORS_HEADERS = {
+var CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
