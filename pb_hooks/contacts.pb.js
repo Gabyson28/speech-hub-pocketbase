@@ -17,7 +17,8 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
 routerAdd("POST", API_PREFIX + "/contact", (c) => {
   let data = {};
   try {
-    c.bindBody(data);
+    const info = $apis.requestInfo(c);
+    data = (info && info.data) ? info.data : {};
   } catch (err) {
     console.error("Invalid contact request payload:", err);
     return c.json(400, {
