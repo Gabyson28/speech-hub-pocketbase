@@ -75,16 +75,25 @@ routerAdd("GET", "/api/contact-smoke", (c) => {
     c.response().header().set(key, CORS_HEADERS[key]);
   }
 
-  const adminEmail = config.adminEmail;
-  if (!adminEmail) {
-    return c.json(500, { message: "Missing MAIL_ADMIN environment variable." });
-  }
-
   try {
+    const adminEmail =
+      $os.getenv("MAIL_ADMIN") ||
+      (typeof config !== "undefined" && config ? config.adminEmail : "");
+    if (!adminEmail) {
+      return c.json(500, { message: "Missing MAIL_ADMIN environment variable." });
+    }
+
     const settings = $app.settings();
     const meta = settings && settings.meta ? settings.meta : {};
-    const senderAddress = config.fromEmail || meta.senderAddress;
-    const senderName = config.fromName || meta.senderName || "";
+    const senderAddress =
+      $os.getenv("MAIL_FROM") ||
+      (typeof config !== "undefined" && config ? config.fromEmail : "") ||
+      meta.senderAddress;
+    const senderName =
+      $os.getenv("MAIL_FROM_NAME") ||
+      (typeof config !== "undefined" && config ? config.fromName : "") ||
+      meta.senderName ||
+      "";
 
     if (!senderAddress) {
       return c.json(500, {
@@ -102,8 +111,8 @@ routerAdd("GET", "/api/contact-smoke", (c) => {
       from: from,
       to: [{ address: adminEmail }],
       subject: "[PocketBase] Contact smoke test",
-      html: `<p>Smoke test OK at ${now}</p>`,
-      text: `Smoke test OK at ${now}`,
+      html: "<p>Smoke test OK at " + now + "</p>",
+      text: "Smoke test OK at " + now,
     });
 
     $app.newMailClient().send(message);
