@@ -2,18 +2,39 @@
 // Endpoint: POST /api/speech-hub/contact
 
 routerAdd("POST", "/api/speech-hub/contact", (c) => {
-  var info = {};
   var data = {};
   var query = {};
+  var form = {};
 
+  // 1) Try native body binding (JSON)
   try {
-    info = $apis.requestInfo(c);
-    data = info && info.data ? info.data : {};
-    query = info && info.query ? info.query : {};
-  } catch (err) {
-    data = {};
-    query = {};
+    c.bindBody(data);
+  } catch (_) {}
+
+  // 2) Fallback to requestInfo data/query
+  if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
+    try {
+      var info = $apis.requestInfo(c);
+      data = info && info.data ? info.data : {};
+      query = info && info.query ? info.query : {};
+    } catch (_) {
+      data = {};
+      query = {};
+    }
   }
+
+  // 3) Fallback to form/query helpers
+  try { form.name = c.formValue("name"); } catch (_) {}
+  try { form.email = c.formValue("email"); } catch (_) {}
+  try { form.phone = c.formValue("phone"); } catch (_) {}
+  try { form.message = c.formValue("message"); } catch (_) {}
+  try { form.lang = c.formValue("lang"); } catch (_) {}
+
+  try { query.name = query.name || c.queryParam("name"); } catch (_) {}
+  try { query.email = query.email || c.queryParam("email"); } catch (_) {}
+  try { query.phone = query.phone || c.queryParam("phone"); } catch (_) {}
+  try { query.message = query.message || c.queryParam("message"); } catch (_) {}
+  try { query.lang = query.lang || c.queryParam("lang"); } catch (_) {}
 
   var pickValue = function(obj, key) {
     if (!obj || typeof obj !== "object") {
@@ -31,11 +52,11 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
     return String(value).trim();
   };
 
-  var name = pickValue(data, "name") || pickValue(query, "name");
-  var email = pickValue(data, "email") || pickValue(query, "email");
-  var phone = pickValue(data, "phone") || pickValue(query, "phone");
-  var message = pickValue(data, "message") || pickValue(query, "message");
-  var langRaw = (pickValue(data, "lang") || pickValue(query, "lang")).toLowerCase();
+  var name = pickValue(data, "name") || pickValue(form, "name") || pickValue(query, "name");
+  var email = pickValue(data, "email") || pickValue(form, "email") || pickValue(query, "email");
+  var phone = pickValue(data, "phone") || pickValue(form, "phone") || pickValue(query, "phone");
+  var message = pickValue(data, "message") || pickValue(form, "message") || pickValue(query, "message");
+  var langRaw = (pickValue(data, "lang") || pickValue(form, "lang") || pickValue(query, "lang")).toLowerCase();
   var lang = langRaw === "es" ? "es" : "en";
 
   if (!name || !email || !message) {
