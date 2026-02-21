@@ -22,7 +22,7 @@ routerAdd("POST", "/api/contact", (c) => {
 
   let data = {};
   try {
-    data = $apis.requestInfo(c).data || {};
+    c.bindBody(data);
   } catch (err) {
     console.error("Invalid contact request payload:", err);
     return c.json(400, {
