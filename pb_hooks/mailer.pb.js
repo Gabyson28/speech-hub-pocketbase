@@ -1,10 +1,7 @@
 // mailer.pb.js
 // Handles all email sending logic using Resend API
-
-const { emailLayout } = require(`${__hooks}/templates/layout.js`);
-const { contactAdmin } = require(`${__hooks}/templates/contact-admin.js`);
-const { contactUserEn } = require(`${__hooks}/templates/contact-user.en.js`);
-const { contactUserEs } = require(`${__hooks}/templates/contact-user.es.js`);
+// Template functions (emailLayout, contactAdmin, contactUserEn, contactUserEs)
+// are defined globally in templates.pb.js (auto-loaded by PocketBase)
 
 const sendEmail = (to, subject, html, replyTo) => {
   const payload = {
