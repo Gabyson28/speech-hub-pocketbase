@@ -136,30 +136,58 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
   };
 
   try {
+    var adminHtml = "";
+    var adminText = "";
+    if (typeof emailLayout === "function" && typeof contactAdmin === "function") {
+      adminHtml = emailLayout(contactAdmin(name, email, phone || "", message), "es");
+      adminText =
+        "Nombre: " + name + "\n" +
+        "Correo: " + email + "\n" +
+        "Telefono: " + phoneText + "\n" +
+        "Mensaje: " + message;
+    } else {
+      adminHtml =
+        "<p><strong>Nombre:</strong> " + name + "</p>" +
+        "<p><strong>Correo:</strong> " + email + "</p>" +
+        "<p><strong>Telefono:</strong> " + phoneText + "</p>" +
+        "<p><strong>Mensaje:</strong><br/>" + message + "</p>";
+      adminText =
+        "Nombre: " + name + "\n" +
+        "Correo: " + email + "\n" +
+        "Telefono: " + phoneText + "\n" +
+        "Mensaje: " + message;
+    }
+
     sendWithResendApi({
       from: from,
       to: [adminEmail],
       subject: "Nuevo mensaje de " + name,
-      html:
-        "<p><strong>Nombre:</strong> " + name + "</p>" +
-        "<p><strong>Correo:</strong> " + email + "</p>" +
-        "<p><strong>Telefono:</strong> " + phoneText + "</p>" +
-        "<p><strong>Mensaje:</strong><br/>" + message + "</p>",
-      text:
-        "Nombre: " + name + "\n" +
-        "Correo: " + email + "\n" +
-        "Telefono: " + phoneText + "\n" +
-        "Mensaje: " + message,
+      html: adminHtml,
+      text: adminText,
       reply_to: email,
     });
 
     var userSubject = lang === "es" ? "Recibimos tu mensaje" : "We received your message";
-    var userHtml = lang === "es"
-      ? "<p>Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto.</p>"
-      : "<p>Thanks for reaching out. We received your message and will reply soon.</p>";
-    var userText = lang === "es"
-      ? "Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto."
-      : "Thanks for reaching out. We received your message and will reply soon.";
+    var userHtml = "";
+    var userText = "";
+    if (
+      typeof emailLayout === "function" &&
+      ((lang === "es" && typeof contactUserEs === "function") ||
+        (lang !== "es" && typeof contactUserEn === "function"))
+    ) {
+      var userContent = lang === "es" ? contactUserEs(name) : contactUserEn(name);
+      userHtml = emailLayout(userContent, lang);
+      userText = lang === "es"
+        ? "Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto."
+        : "Thanks for reaching out. We received your message and will reply soon.";
+    } else {
+      userHtml = lang === "es"
+        ? "<p>Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto.</p>"
+        : "<p>Thanks for reaching out. We received your message and will reply soon.</p>";
+      userText = lang === "es"
+        ? "Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto."
+        : "Thanks for reaching out. We received your message and will reply soon.";
+    }
 
     sendWithResendApi({
       from: from,
