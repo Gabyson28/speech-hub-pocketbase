@@ -1,10 +1,10 @@
 // mailer.pb.js
 // Handles all email sending logic using Resend API
 
-const { emailLayout } = require("./templates/layout.js");
-const { contactAdmin } = require("./templates/contact-admin.js");
-const { contactUserEn } = require("./templates/contact-user.en.js");
-const { contactUserEs } = require("./templates/contact-user.es.js");
+const { emailLayout } = require(`${__hooks}/templates/layout.js`);
+const { contactAdmin } = require(`${__hooks}/templates/contact-admin.js`);
+const { contactUserEn } = require(`${__hooks}/templates/contact-user.en.js`);
+const { contactUserEs } = require(`${__hooks}/templates/contact-user.es.js`);
 
 const sendEmail = (to, subject, html, replyTo) => {
   const payload = {
