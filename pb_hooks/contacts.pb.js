@@ -1,41 +1,7 @@
 // contacts.pb.js
 // Endpoint: POST /api/speech-hub/contact
 
-var API_PREFIX = "/api/speech-hub";
-
-function pickValue(obj, key) {
-  if (!obj || typeof obj !== "object") {
-    return "";
-  }
-
-  var value = obj[key];
-  if (Array.isArray(value)) {
-    value = value.length ? value[0] : "";
-  }
-  if (value === null || typeof value === "undefined") {
-    return "";
-  }
-
-  return String(value).trim();
-}
-
-function sendWithResendApi(payload, resendApiKey) {
-  var response = $http.send({
-    url: "https://api.resend.com/emails",
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + resendApiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw new Error("Resend API error " + response.statusCode + ": " + String(response.raw || ""));
-  }
-}
-
-routerAdd("POST", API_PREFIX + "/contact", (c) => {
+routerAdd("POST", "/api/speech-hub/contact", (c) => {
   var info = {};
   var data = {};
   var query = {};
@@ -48,6 +14,22 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
     data = {};
     query = {};
   }
+
+  var pickValue = function(obj, key) {
+    if (!obj || typeof obj !== "object") {
+      return "";
+    }
+
+    var value = obj[key];
+    if (Array.isArray(value)) {
+      value = value.length ? value[0] : "";
+    }
+    if (value === null || typeof value === "undefined") {
+      return "";
+    }
+
+    return String(value).trim();
+  };
 
   var name = pickValue(data, "name") || pickValue(query, "name");
   var email = pickValue(data, "email") || pickValue(query, "email");
@@ -73,11 +55,31 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
   var resendApiKey = $os.getenv("RESEND_API_KEY") || "";
 
   if (!senderAddress || !adminEmail || !resendApiKey) {
-    return c.json(500, { message: "Missing MAIL_FROM/MAIL_ADMIN/RESEND_API_KEY configuration" });
+    return c.json(500, {
+      message: "Missing MAIL_FROM/MAIL_ADMIN/RESEND_API_KEY configuration",
+    });
   }
 
   var from = senderName ? (senderName + " <" + senderAddress + ">") : senderAddress;
   var phoneText = phone ? phone : "N/A";
+
+  var sendWithResendApi = function(payload) {
+    var response = $http.send({
+      url: "https://api.resend.com/emails",
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + resendApiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(
+        "Resend API error " + response.statusCode + ": " + String(response.raw || "")
+      );
+    }
+  };
 
   try {
     sendWithResendApi({
@@ -95,7 +97,7 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
         "Telefono: " + phoneText + "\n" +
         "Mensaje: " + message,
       reply_to: email,
-    }, resendApiKey);
+    });
 
     var userSubject = lang === "es" ? "Recibimos tu mensaje" : "We received your message";
     var userHtml = lang === "es"
@@ -111,7 +113,7 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
       subject: userSubject,
       html: userHtml,
       text: userText,
-    }, resendApiKey);
+    });
 
     return c.json(200, { message: "Message sent successfully" });
   } catch (err) {
