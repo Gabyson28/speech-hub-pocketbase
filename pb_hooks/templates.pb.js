@@ -3,7 +3,7 @@
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
-const emailLayout = (content, lang, websiteUrl) => {
+var emailLayout = function(content, lang, websiteUrl) {
   lang = lang || "en";
   websiteUrl = websiteUrl || "https://carelimartinezphl.com";
   const title = lang === "es" ? "Patóloga del Habla" : "Speech-Language Pathologist";
@@ -51,7 +51,7 @@ const emailLayout = (content, lang, websiteUrl) => {
 
 // ─── Admin notification ────────────────────────────────────────────────────────
 
-const contactAdmin = function(name, email, phone, message) {
+var contactAdmin = function(name, email, phone, message) {
   var phoneBlock = phone
     ? "<div class=\"label\">Tel\u00e9fono</div><div class=\"value\"><a href=\"tel:" + phone + "\" style=\"color:#2a8f6f;text-decoration:none;\">" + phone + "</a></div>"
     : "";
@@ -73,7 +73,7 @@ const contactAdmin = function(name, email, phone, message) {
 
 // ─── User confirmation — English ───────────────────────────────────────────────
 
-const contactUserEn = function(name) {
+var contactUserEn = function(name) {
   return "<style>" +
     ".greeting { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; color: #1e3040; margin-bottom: 16px; }" +
     ".message-body { font-size: 15px; line-height: 1.75; color: #3a5568; margin-bottom: 24px; }" +
@@ -92,7 +92,7 @@ const contactUserEn = function(name) {
 
 // ─── User confirmation — Spanish ──────────────────────────────────────────────
 
-const contactUserEs = function(name) {
+var contactUserEs = function(name) {
   return "<style>" +
     ".greeting { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 600; color: #1e3040; margin-bottom: 16px; }" +
     ".message-body { font-size: 15px; line-height: 1.75; color: #3a5568; margin-bottom: 24px; }" +
