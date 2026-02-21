@@ -1,0 +1,7 @@
+# Environment variables - NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# PocketBase data (generated at runtime)
+pb_data/

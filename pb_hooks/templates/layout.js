@@ -1,0 +1,119 @@
+// Shared header and footer for all email templates
+// lang: "en" | "es"
+const emailLayout = (content, lang = "en", websiteUrl = "https://carelimartinezphl.com") => {
+  const title = lang === "es" ? "Patóloga del Habla" : "Speech-Language Pathologist";
+  const footerNote = lang === "es"
+    ? "Este correo fue enviado automáticamente. Por favor no respondas directamente a este mensaje."
+    : "This email was sent automatically. Please do not reply directly to this message.";
+
+  return `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Careli Martínez Aquino, CCC-SLP</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #eef4f5;
+      font-family: 'Inter', Arial, sans-serif;
+      color: #1e3040;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px -14px rgba(30,60,80,0.22), 0 2px 6px -3px rgba(30,60,80,0.12);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #2a8f6f 0%, #2e9e82 50%, #2b9bb5 100%);
+      padding: 36px 40px;
+      text-align: center;
+    }
+
+    .header-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .header-title {
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .content {
+      padding: 40px 40px 32px;
+    }
+
+    .footer {
+      background-color: #f0f6f7;
+      border-top: 1px solid #d8e8ea;
+      padding: 24px 40px;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: #6b8a96;
+      line-height: 1.6;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+
+    .footer a {
+      color: #2a8f6f;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-divider {
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, #2a8f6f, #2b9bb5);
+      margin: 12px auto;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="header">
+      <div class="header-name">Careli Martínez Aquino, CCC-SLP</div>
+      <div class="header-title">${title}</div>
+    </div>
+
+    <div class="content">
+      ${content}
+    </div>
+
+    <div class="footer">
+      <div class="footer-divider"></div>
+      <p>
+        © ${new Date().getFullYear()} Careli Martínez Aquino &nbsp;·&nbsp;
+        <a href="${websiteUrl}">${websiteUrl.replace("https://", "")}</a>
+      </p>
+      <p style="margin-top: 6px;">${footerNote}</p>
+    </div>
+
+  </div>
+</body>
+</html>`;
+};
+
+module.exports = { emailLayout };

@@ -29,5 +29,5 @@ COPY --from=downloader /pocketbase /usr/local/bin/pocketbase
 # Copy ONLY what you actually have
 COPY pb_migrations /pb_migrations
 COPY pb_data /pb_data
-
-CMD ["/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb_data"]
+COPY pb_hooks /pb_hooks
+CMD ["/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb_data", "--hooksDir=/pb_hooks"]
