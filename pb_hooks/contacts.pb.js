@@ -14,6 +14,51 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
   });
 });
 
+// Generic SMTP test endpoint (no payload parsing).
+routerAdd("POST", API_PREFIX + "/contact-generic", (c) => {
+  try {
+    var settings = $app.settings();
+    var meta = settings && settings.meta ? settings.meta : {};
+    var senderAddress = $os.getenv("MAIL_FROM") || meta.senderAddress || "";
+    var senderName = $os.getenv("MAIL_FROM_NAME") || meta.senderName || "";
+    var adminEmail = $os.getenv("MAIL_ADMIN") || "";
+
+    if (!senderAddress) {
+      return c.json(500, { message: "Missing sender email (MAIL_FROM or mail settings senderAddress)." });
+    }
+    if (!adminEmail) {
+      return c.json(500, { message: "Missing MAIL_ADMIN environment variable." });
+    }
+
+    var from = { address: senderAddress };
+    if (senderName) {
+      from.name = senderName;
+    }
+
+    var now = new Date().toISOString();
+    var msg = new MailerMessage({
+      from: from,
+      to: [{ address: adminEmail }],
+      subject: "[Contact Test] Generic endpoint",
+      html: "<p>Generic contact test sent at " + now + "</p>",
+      text: "Generic contact test sent at " + now,
+    });
+
+    $app.newMailClient().send(msg);
+    return c.json(200, {
+      message: "Generic test email sent successfully.",
+      to: adminEmail,
+      at: now,
+    });
+  } catch (err) {
+    console.error("Generic contact test error:", err);
+    return c.json(500, {
+      message: "Generic test email failed.",
+      error: String(err),
+    });
+  }
+});
+
 routerAdd("POST", API_PREFIX + "/contact", (c) => {
   let data = {};
   let query = {};
