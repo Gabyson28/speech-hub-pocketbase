@@ -19,9 +19,12 @@ RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${VERSION}/
     && chmod +x /pocketbase
 
 # Final minimal container
-FROM scratch
+FROM alpine:3
 
 EXPOSE 8090
+
+# Certificados SSL necesarios para conexiones TLS
+RUN apk add --no-cache ca-certificates
 
 # Copy PocketBase binary into final image
 COPY --from=downloader /pocketbase /usr/local/bin/pocketbase
