@@ -5,6 +5,34 @@ var CONTACTS_HOOK_VERSION = "2026-02-21-debug-1";
 console.log("[hooks] contacts.pb.js loaded:", CONTACTS_HOOK_VERSION);
 var API_PREFIX = "/api/speech-hub";
 
+function setCorsHeader(c, key, value) {
+  var responseObj = typeof c.response === "function" ? c.response() : c.response;
+  if (!responseObj) {
+    return;
+  }
+
+  var headerObj =
+    typeof responseObj.header === "function" ? responseObj.header() : responseObj.header;
+  if (!headerObj) {
+    return;
+  }
+
+  if (typeof headerObj.set === "function") {
+    headerObj.set(key, value);
+    return;
+  }
+
+  if (typeof headerObj.Set === "function") {
+    headerObj.Set(key, value);
+  }
+}
+
+function applyCors(c) {
+  setCorsHeader(c, "Access-Control-Allow-Origin", "*");
+  setCorsHeader(c, "Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  setCorsHeader(c, "Access-Control-Allow-Headers", "Content-Type");
+}
+
 // Sentinel route to verify that custom JS hooks are really loaded.
 routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
   return c.json(200, {
@@ -16,16 +44,12 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
 
 // Handle CORS preflight
 routerAdd("OPTIONS", API_PREFIX + "/contact", (c) => {
-  c.response().header().set("Access-Control-Allow-Origin", "*");
-  c.response().header().set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  c.response().header().set("Access-Control-Allow-Headers", "Content-Type");
+  applyCors(c);
   return c.string(204, "");
 });
 
 routerAdd("POST", API_PREFIX + "/contact", (c) => {
-  c.response().header().set("Access-Control-Allow-Origin", "*");
-  c.response().header().set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  c.response().header().set("Access-Control-Allow-Headers", "Content-Type");
+  applyCors(c);
 
   let data = {};
   try {
@@ -78,9 +102,7 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
 
 // Minimal smoke test to isolate mail delivery from request body parsing.
 routerAdd("GET", API_PREFIX + "/contact-smoke", (c) => {
-  c.response().header().set("Access-Control-Allow-Origin", "*");
-  c.response().header().set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  c.response().header().set("Access-Control-Allow-Headers", "Content-Type");
+  applyCors(c);
 
   try {
     const adminEmail =
