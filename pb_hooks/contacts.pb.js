@@ -1,8 +1,9 @@
 // contacts.pb.js
-// Endpoint: POST /api/contact
+// Endpoint: POST /api/speech-hub/contact
 
 const CONTACTS_HOOK_VERSION = "2026-02-21-debug-1";
 console.log("[hooks] contacts.pb.js loaded:", CONTACTS_HOOK_VERSION);
+const API_PREFIX = "/api/speech-hub";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,7 @@ const CORS_HEADERS = {
 };
 
 // Sentinel route to verify that custom JS hooks are really loaded.
-routerAdd("GET", "/api/_debug/hooks", (c) => {
+routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
   return c.json(200, {
     ok: true,
     hook: "contacts.pb.js",
@@ -20,14 +21,14 @@ routerAdd("GET", "/api/_debug/hooks", (c) => {
 });
 
 // Handle CORS preflight
-routerAdd("OPTIONS", "/api/contact", (c) => {
+routerAdd("OPTIONS", API_PREFIX + "/contact", (c) => {
   for (var key in CORS_HEADERS) {
     c.response().header().set(key, CORS_HEADERS[key]);
   }
   return c.string(204, "");
 });
 
-routerAdd("POST", "/api/contact", (c) => {
+routerAdd("POST", API_PREFIX + "/contact", (c) => {
   for (var key in CORS_HEADERS) {
     c.response().header().set(key, CORS_HEADERS[key]);
   }
@@ -82,7 +83,7 @@ routerAdd("POST", "/api/contact", (c) => {
 });
 
 // Minimal smoke test to isolate mail delivery from request body parsing.
-routerAdd("GET", "/api/contact-smoke", (c) => {
+routerAdd("GET", API_PREFIX + "/contact-smoke", (c) => {
   for (var key in CORS_HEADERS) {
     c.response().header().set(key, CORS_HEADERS[key]);
   }
