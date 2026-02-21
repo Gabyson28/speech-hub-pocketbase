@@ -16,13 +16,19 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
 
 routerAdd("POST", API_PREFIX + "/contact", (c) => {
   let data = {};
+  let query = {};
+  let headers = {};
   let parseError = null;
   try {
     const info = $apis.requestInfo(c);
     data = (info && info.data) ? info.data : {};
+    query = (info && info.query) ? info.query : {};
+    headers = (info && info.headers) ? info.headers : {};
   } catch (err) {
     parseError = err;
     data = {};
+    query = {};
+    headers = {};
   }
 
   // Fallbacks for form-data/x-www-form-urlencoded/query params (eg. Postman tests)
@@ -51,15 +57,43 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
     });
   }
 
-  const name = String(data.name || "").trim();
-  const email = String(data.email || "").trim();
-  const phone = typeof data.phone === "string" ? data.phone.trim() : null;
-  const message = String(data.message || "").trim();
-  const lang = data.lang === "es" ? "es" : "en";
+  const pick = (obj, key) => {
+    if (!obj || typeof obj !== "object") {
+      return "";
+    }
+
+    let val = obj[key];
+    if (Array.isArray(val)) {
+      val = val.length ? val[0] : "";
+    }
+    if (val === null || typeof val === "undefined") {
+      return "";
+    }
+
+    return String(val).trim();
+  };
+
+  const name = pick(data, "name") || pick(query, "name");
+  const email = pick(data, "email") || pick(query, "email");
+  const phoneRaw = pick(data, "phone") || pick(query, "phone");
+  const phone = phoneRaw || null;
+  const message = pick(data, "message") || pick(query, "message");
+  const langRaw = (pick(data, "lang") || pick(query, "lang")).toLowerCase();
+  const lang = langRaw === "es" ? "es" : "en";
 
   // Validate required fields
   if (!name || !email || !message) {
-    return c.json(400, { message: "name, email and message are required" });
+    return c.json(400, {
+      message: "name, email and message are required",
+      debug: {
+        receivedData: data,
+        receivedQuery: query,
+        contentType:
+          pick(headers, "content-type") ||
+          pick(headers, "Content-Type") ||
+          "",
+      },
+    });
   }
 
   // Basic email format check
