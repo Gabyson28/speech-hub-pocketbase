@@ -5,6 +5,7 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
   var data = {};
   var query = {};
   var form = {};
+  var req = null;
 
   // 1) Try native body binding (JSON)
   try {
@@ -24,11 +25,43 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
   }
 
   // 3) Fallback to form/query helpers
+  try {
+    req = typeof c.request === "function" ? c.request() : c.request;
+  } catch (_) {}
+
+  if (req) {
+    try { req.parseForm(); } catch (_) {}
+  }
+
   try { form.name = c.formValue("name"); } catch (_) {}
   try { form.email = c.formValue("email"); } catch (_) {}
   try { form.phone = c.formValue("phone"); } catch (_) {}
   try { form.message = c.formValue("message"); } catch (_) {}
   try { form.lang = c.formValue("lang"); } catch (_) {}
+
+  // parseForm() fallback for x-www-form-urlencoded
+  var readVal = function(values, key) {
+    if (!values) return "";
+    try {
+      if (typeof values.get === "function") {
+        var got = values.get(key);
+        return got === null || typeof got === "undefined" ? "" : String(got);
+      }
+    } catch (_) {}
+    try {
+      var raw = values[key];
+      if (Array.isArray(raw)) return raw.length ? String(raw[0]) : "";
+      if (raw === null || typeof raw === "undefined") return "";
+      return String(raw);
+    } catch (_) {}
+    return "";
+  };
+
+  if (!form.name) form.name = readVal(req && req.form, "name") || readVal(req && req.postForm, "name");
+  if (!form.email) form.email = readVal(req && req.form, "email") || readVal(req && req.postForm, "email");
+  if (!form.phone) form.phone = readVal(req && req.form, "phone") || readVal(req && req.postForm, "phone");
+  if (!form.message) form.message = readVal(req && req.form, "message") || readVal(req && req.postForm, "message");
+  if (!form.lang) form.lang = readVal(req && req.form, "lang") || readVal(req && req.postForm, "lang");
 
   try { query.name = query.name || c.queryParam("name"); } catch (_) {}
   try { query.email = query.email || c.queryParam("email"); } catch (_) {}
