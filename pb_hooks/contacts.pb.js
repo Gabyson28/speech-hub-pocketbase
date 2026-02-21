@@ -20,27 +20,45 @@ routerAdd("POST", "/api/contact", (c) => {
     c.response().header().set(key, CORS_HEADERS[key]);
   }
 
-  const data = $apis.requestInfo(c).data;
+  let data = {};
+  try {
+    data = $apis.requestInfo(c).data || {};
+  } catch (err) {
+    console.error("Invalid contact request payload:", err);
+    return c.json(400, {
+      message: "Invalid request body. Send valid JSON with Content-Type: application/json.",
+    });
+  }
+
+  if (typeof data !== "object" || Array.isArray(data)) {
+    return c.json(400, {
+      message: "Invalid request body. Expected a JSON object.",
+    });
+  }
+
+  const name = String(data.name || "").trim();
+  const email = String(data.email || "").trim();
+  const phone = typeof data.phone === "string" ? data.phone.trim() : null;
+  const message = String(data.message || "").trim();
+  const lang = data.lang === "es" ? "es" : "en";
 
   // Validate required fields
-  if (!data.name || !data.email || !data.message) {
+  if (!name || !email || !message) {
     return c.json(400, { message: "name, email and message are required" });
   }
 
   // Basic email format check
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(data.email)) {
+  if (!emailRegex.test(email)) {
     return c.json(400, { message: "Invalid email address" });
   }
 
-  const lang = data.lang === "es" ? "es" : "en";
-
   try {
     sendContactEmails(
-      data.name,
-      data.email,
-      data.phone || null,
-      data.message,
+      name,
+      email,
+      phone,
+      message,
       lang
     );
 

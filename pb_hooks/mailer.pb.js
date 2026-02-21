@@ -69,7 +69,3 @@ const sendContactEmails = (name, email, phone, message, lang) => {
   const userHtml = emailLayout(userContent, lang);
   sendEmail(email, userSubject, userHtml);
 };
-
-const sendCustomEmail = (to, subject, html, text, replyTo) => {
-  sendEmail(to, subject, html, replyTo, text);
-};
