@@ -16,19 +16,38 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
 
 routerAdd("POST", API_PREFIX + "/contact", (c) => {
   let data = {};
+  let parseError = null;
   try {
     const info = $apis.requestInfo(c);
     data = (info && info.data) ? info.data : {};
   } catch (err) {
-    console.error("Invalid contact request payload:", err);
-    return c.json(400, {
-      message: "Invalid request body. Send valid JSON with Content-Type: application/json.",
-    });
+    parseError = err;
+    data = {};
   }
 
-  if (typeof data !== "object" || Array.isArray(data)) {
+  // Fallbacks for form-data/x-www-form-urlencoded/query params (eg. Postman tests)
+  if (!data || typeof data !== "object" || Array.isArray(data) || Object.keys(data).length === 0) {
+    const fallback = {};
+    try { fallback.name = c.formValue("name"); } catch (_) {}
+    try { fallback.email = c.formValue("email"); } catch (_) {}
+    try { fallback.phone = c.formValue("phone"); } catch (_) {}
+    try { fallback.message = c.formValue("message"); } catch (_) {}
+    try { fallback.lang = c.formValue("lang"); } catch (_) {}
+
+    try { fallback.name = fallback.name || c.queryParam("name"); } catch (_) {}
+    try { fallback.email = fallback.email || c.queryParam("email"); } catch (_) {}
+    try { fallback.phone = fallback.phone || c.queryParam("phone"); } catch (_) {}
+    try { fallback.message = fallback.message || c.queryParam("message"); } catch (_) {}
+    try { fallback.lang = fallback.lang || c.queryParam("lang"); } catch (_) {}
+
+    data = fallback;
+  }
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    console.error("Invalid contact request payload:", parseError);
     return c.json(400, {
-      message: "Invalid request body. Expected a JSON object.",
+      message: "Invalid request body. Send JSON or form-data with name, email, message.",
+      error: parseError ? String(parseError) : "unknown",
     });
   }
 
@@ -50,13 +69,68 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
   }
 
   try {
-    sendContactEmails(
-      name,
-      email,
-      phone,
-      message,
-      lang
-    );
+    if (typeof sendContactEmails === "function") {
+      sendContactEmails(
+        name,
+        email,
+        phone,
+        message,
+        lang
+      );
+    } else {
+      // Fallback when PocketBase runtime isolates handlers from custom globals.
+      const settings = $app.settings();
+      const meta = settings && settings.meta ? settings.meta : {};
+      const senderAddress = $os.getenv("MAIL_FROM") || meta.senderAddress || "";
+      const senderName = $os.getenv("MAIL_FROM_NAME") || meta.senderName || "";
+      const adminEmail = $os.getenv("MAIL_ADMIN") || "";
+
+      if (!senderAddress || !adminEmail) {
+        throw new Error("Missing MAIL_FROM/senderAddress or MAIL_ADMIN configuration.");
+      }
+
+      const from = { address: senderAddress };
+      if (senderName) {
+        from.name = senderName;
+      }
+
+      const adminMsg = new MailerMessage({
+        from: from,
+        to: [{ address: adminEmail }],
+        subject: "Nuevo mensaje de " + name,
+        html:
+          "<p><strong>Nombre:</strong> " + name + "</p>" +
+          "<p><strong>Correo:</strong> " + email + "</p>" +
+          "<p><strong>Telefono:</strong> " + (phone || "N/A") + "</p>" +
+          "<p><strong>Mensaje:</strong><br/>" + message + "</p>",
+        text:
+          "Nombre: " + name + "\n" +
+          "Correo: " + email + "\n" +
+          "Telefono: " + (phone || "N/A") + "\n" +
+          "Mensaje: " + message,
+        replyTo: [{ address: email }],
+      });
+
+      $app.newMailClient().send(adminMsg);
+
+      const userSubject = lang === "es" ? "Recibimos tu mensaje" : "We received your message";
+      const userHtml = lang === "es"
+        ? "<p>Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto.</p>"
+        : "<p>Thanks for reaching out. We received your message and will reply soon.</p>";
+      const userText = lang === "es"
+        ? "Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto."
+        : "Thanks for reaching out. We received your message and will reply soon.";
+
+      const userMsg = new MailerMessage({
+        from: from,
+        to: [{ address: email }],
+        subject: userSubject,
+        html: userHtml,
+        text: userText,
+      });
+
+      $app.newMailClient().send(userMsg);
+    }
 
     return c.json(200, { message: "Message sent successfully" });
   } catch (err) {
