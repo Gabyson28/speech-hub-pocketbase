@@ -136,16 +136,48 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
   };
 
   try {
-    if (
-      typeof emailLayout !== "function" ||
-      typeof contactAdmin !== "function" ||
-      typeof contactUserEs !== "function" ||
-      typeof contactUserEn !== "function"
-    ) {
-      throw new Error("Email templates are not loaded (emailLayout/contactAdmin/contactUserEs/contactUserEn).");
-    }
+    // Use global template functions when available; otherwise use local styled fallbacks.
+    var layoutFn = typeof emailLayout === "function"
+      ? emailLayout
+      : function(content, lang) {
+          var title = lang === "es" ? "Patologa del Habla" : "Speech-Language Pathologist";
+          return (
+            "<!DOCTYPE html><html><head><meta charset=\"UTF-8\" />" +
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>" +
+            "<style>body{background:#eef4f5;font-family:Arial,sans-serif;color:#1e3040}" +
+            ".wrapper{max-width:600px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden}" +
+            ".header{background:linear-gradient(135deg,#2a8f6f,#2b9bb5);padding:24px;color:#fff;text-align:center}" +
+            ".content{padding:24px}.footer{padding:16px 24px;background:#f0f6f7;color:#6b8a96;font-size:12px}</style>" +
+            "</head><body><div class=\"wrapper\"><div class=\"header\"><strong>Careli Martinez Aquino, CCC-SLP</strong><br/>" + title +
+            "</div><div class=\"content\">" + content + "</div><div class=\"footer\">Mensaje automatico</div></div></body></html>"
+          );
+        };
 
-    var adminHtml = emailLayout(contactAdmin(name, email, phone || "", message), "es");
+    var adminTplFn = typeof contactAdmin === "function"
+      ? contactAdmin
+      : function(n, e, p, m) {
+          return (
+            "<h2 style=\"margin:0 0 16px;\">Nuevo mensaje de contacto</h2>" +
+            "<p><strong>Nombre:</strong> " + n + "</p>" +
+            "<p><strong>Correo:</strong> " + e + "</p>" +
+            "<p><strong>Telefono:</strong> " + (p || "N/A") + "</p>" +
+            "<p><strong>Mensaje:</strong><br/>" + m + "</p>"
+          );
+        };
+
+    var userEsTplFn = typeof contactUserEs === "function"
+      ? contactUserEs
+      : function(n) {
+          return "<p>Hola, " + n + "</p><p>Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto.</p>";
+        };
+
+    var userEnTplFn = typeof contactUserEn === "function"
+      ? contactUserEn
+      : function(n) {
+          return "<p>Hello, " + n + "</p><p>Thanks for reaching out. We received your message and will reply soon.</p>";
+        };
+
+    var adminHtml = layoutFn(adminTplFn(name, email, phone || "", message), "es");
     var adminText =
       "Nombre: " + name + "\n" +
       "Correo: " + email + "\n" +
@@ -162,8 +194,8 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
     });
 
     var userSubject = lang === "es" ? "Recibimos tu mensaje" : "We received your message";
-    var userContent = lang === "es" ? contactUserEs(name) : contactUserEn(name);
-    var userHtml = emailLayout(userContent, lang);
+    var userContent = lang === "es" ? userEsTplFn(name) : userEnTplFn(name);
+    var userHtml = layoutFn(userContent, lang);
     var userText = lang === "es"
       ? "Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto."
       : "Thanks for reaching out. We received your message and will reply soon.";
@@ -179,6 +211,9 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
     return c.json(200, { message: "Message sent successfully" });
   } catch (err) {
     console.error("Contact email error:", err);
-    return c.json(500, { message: "Failed to send message. Please try again." });
+    return c.json(500, {
+      message: "Failed to send message. Please try again.",
+      error: String(err),
+    });
   }
 });
