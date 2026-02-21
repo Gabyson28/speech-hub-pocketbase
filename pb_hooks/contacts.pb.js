@@ -5,12 +5,6 @@ var CONTACTS_HOOK_VERSION = "2026-02-21-debug-1";
 console.log("[hooks] contacts.pb.js loaded:", CONTACTS_HOOK_VERSION);
 var API_PREFIX = "/api/speech-hub";
 
-var CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
 // Sentinel route to verify that custom JS hooks are really loaded.
 routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
   return c.json(200, {
@@ -22,16 +16,16 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
 
 // Handle CORS preflight
 routerAdd("OPTIONS", API_PREFIX + "/contact", (c) => {
-  for (var key in CORS_HEADERS) {
-    c.response().header().set(key, CORS_HEADERS[key]);
-  }
+  c.response().header().set("Access-Control-Allow-Origin", "*");
+  c.response().header().set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  c.response().header().set("Access-Control-Allow-Headers", "Content-Type");
   return c.string(204, "");
 });
 
 routerAdd("POST", API_PREFIX + "/contact", (c) => {
-  for (var key in CORS_HEADERS) {
-    c.response().header().set(key, CORS_HEADERS[key]);
-  }
+  c.response().header().set("Access-Control-Allow-Origin", "*");
+  c.response().header().set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  c.response().header().set("Access-Control-Allow-Headers", "Content-Type");
 
   let data = {};
   try {
@@ -84,9 +78,9 @@ routerAdd("POST", API_PREFIX + "/contact", (c) => {
 
 // Minimal smoke test to isolate mail delivery from request body parsing.
 routerAdd("GET", API_PREFIX + "/contact-smoke", (c) => {
-  for (var key in CORS_HEADERS) {
-    c.response().header().set(key, CORS_HEADERS[key]);
-  }
+  c.response().header().set("Access-Control-Allow-Origin", "*");
+  c.response().header().set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  c.response().header().set("Access-Control-Allow-Headers", "Content-Type");
 
   try {
     const adminEmail =
