@@ -14,7 +14,7 @@ routerAdd("GET", API_PREFIX + "/_debug/hooks", (c) => {
   });
 });
 
-// Generic SMTP test endpoint (no payload parsing).
+// Generic Resend API test endpoint (no payload parsing).
 routerAdd("POST", API_PREFIX + "/contact-generic", (c) => {
   try {
     var settings = $app.settings();
@@ -22,6 +22,7 @@ routerAdd("POST", API_PREFIX + "/contact-generic", (c) => {
     var senderAddress = $os.getenv("MAIL_FROM") || meta.senderAddress || "";
     var senderName = $os.getenv("MAIL_FROM_NAME") || meta.senderName || "";
     var adminEmail = $os.getenv("MAIL_ADMIN") || "";
+    var resendApiKey = $os.getenv("RESEND_API_KEY") || "";
 
     if (!senderAddress) {
       return c.json(500, { message: "Missing sender email (MAIL_FROM or mail settings senderAddress)." });
@@ -29,26 +30,45 @@ routerAdd("POST", API_PREFIX + "/contact-generic", (c) => {
     if (!adminEmail) {
       return c.json(500, { message: "Missing MAIL_ADMIN environment variable." });
     }
-
-    var from = { address: senderAddress };
-    if (senderName) {
-      from.name = senderName;
+    if (!resendApiKey) {
+      return c.json(500, { message: "Missing RESEND_API_KEY environment variable." });
     }
 
     var now = new Date().toISOString();
-    var msg = new MailerMessage({
+    var from = senderName
+      ? (senderName + " <" + senderAddress + ">")
+      : senderAddress;
+    var payload = {
       from: from,
-      to: [{ address: adminEmail }],
+      to: [adminEmail],
       subject: "[Contact Test] Generic endpoint",
       html: "<p>Generic contact test sent at " + now + "</p>",
       text: "Generic contact test sent at " + now,
+    };
+
+    var res = $http.send({
+      url: "https://api.resend.com/emails",
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + resendApiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
     });
 
-    $app.newMailClient().send(msg);
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      return c.json(500, {
+        message: "Generic test email failed via Resend API.",
+        statusCode: res.statusCode,
+        response: String(res.raw || ""),
+      });
+    }
+
     return c.json(200, {
-      message: "Generic test email sent successfully.",
+      message: "Generic test email sent successfully via Resend API.",
       to: adminEmail,
       at: now,
+      statusCode: res.statusCode,
     });
   } catch (err) {
     console.error("Generic contact test error:", err);
