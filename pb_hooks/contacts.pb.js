@@ -1,7 +1,25 @@
-// contact.pb.js
+// contacts.pb.js
 // Endpoint: POST /api/contact
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+// Handle CORS preflight
+routerAdd("OPTIONS", "/api/contact", (c) => {
+  for (var key in CORS_HEADERS) {
+    c.response().header().set(key, CORS_HEADERS[key]);
+  }
+  return c.string(204, "");
+});
+
 routerAdd("POST", "/api/contact", (c) => {
+  for (var key in CORS_HEADERS) {
+    c.response().header().set(key, CORS_HEADERS[key]);
+  }
+
   const data = $apis.requestInfo(c).data;
 
   // Validate required fields
