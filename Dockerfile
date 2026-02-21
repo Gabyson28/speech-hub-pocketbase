@@ -26,8 +26,7 @@ EXPOSE 8090
 # Copy PocketBase binary into final image
 COPY --from=downloader /pocketbase /usr/local/bin/pocketbase
 
-# Copy ONLY what you actually have
+# pb_data is NOT copied — it lives in a Railway persistent volume at /pb_data
 COPY pb_migrations /pb_migrations
-COPY pb_data /pb_data
 COPY pb_hooks /pb_hooks
 CMD ["/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb_data", "--hooksDir=/pb_hooks"]
