@@ -72,5 +72,3 @@ const contactUserEs = (name) => `
     <div class="signature-title">Patóloga del Habla</div>
   </div>
 `;
-
-module.exports = { contactUserEs };

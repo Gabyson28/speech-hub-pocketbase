@@ -44,23 +44,21 @@ const contactAdmin = (name, email, phone, message) => `
     }
   </style>
 
-  <p class="section-title">Nuevo mensaje de contacto</p>
+  <p class="section-title">New Contact Form Submission</p>
 
-  <div class="label">Nombre</div>
+  <div class="label">Name</div>
   <div class="value">${name}</div>
 
-  <div class="label">Correo</div>
+  <div class="label">Email</div>
   <div class="value"><a href="mailto:${email}" style="color:#2a8f6f;text-decoration:none;">${email}</a></div>
 
   ${phone ? `
-  <div class="label">Teléfono</div>
+  <div class="label">Phone</div>
   <div class="value"><a href="tel:${phone}" style="color:#2a8f6f;text-decoration:none;">${phone}</a></div>
   ` : ''}
 
   <hr class="divider" />
 
-  <div class="label">Mensaje</div>
+  <div class="label">Message</div>
   <div class="message-value">${message}</div>
 `;
-
-module.exports = { contactAdmin };

@@ -115,5 +115,3 @@ const emailLayout = (content, lang = "en", websiteUrl = "https://carelimartinezp
 </body>
 </html>`;
 };
-
-module.exports = { emailLayout };
