@@ -1,6 +1,25 @@
 // contacts.pb.js
 // Endpoint: POST /api/speech-hub/contact
 
+var contactTemplates = null;
+var contactTemplatesLoadError = "";
+
+try {
+  var layoutModule = require(__hooks + "/templates/layout.js");
+  var adminModule = require(__hooks + "/templates/contact-admin.js");
+  var userEnModule = require(__hooks + "/templates/contact-user.en.js");
+  var userEsModule = require(__hooks + "/templates/contact-user.es.js");
+
+  contactTemplates = {
+    emailLayout: layoutModule && layoutModule.emailLayout,
+    contactAdmin: adminModule && adminModule.contactAdmin,
+    contactUserEn: userEnModule && userEnModule.contactUserEn,
+    contactUserEs: userEsModule && userEsModule.contactUserEs,
+  };
+} catch (err) {
+  contactTemplatesLoadError = String(err);
+}
+
 routerAdd("POST", "/api/speech-hub/contact", (c) => {
   var data = {};
   var query = {};
@@ -137,20 +156,22 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
 
   try {
     if (
-      typeof emailLayout !== "function" ||
-      typeof contactAdmin !== "function" ||
-      typeof contactUserEs !== "function" ||
-      typeof contactUserEn !== "function"
+      !contactTemplates ||
+      typeof contactTemplates.emailLayout !== "function" ||
+      typeof contactTemplates.contactAdmin !== "function" ||
+      typeof contactTemplates.contactUserEs !== "function" ||
+      typeof contactTemplates.contactUserEn !== "function"
     ) {
       return c.json(500, {
         message: "Email templates are not loaded on server",
+        error: contactTemplatesLoadError || "Template modules missing exports",
       });
     }
 
-    var layoutFn = emailLayout;
-    var adminTplFn = contactAdmin;
-    var userEsTplFn = contactUserEs;
-    var userEnTplFn = contactUserEn;
+    var layoutFn = contactTemplates.emailLayout;
+    var adminTplFn = contactTemplates.contactAdmin;
+    var userEsTplFn = contactTemplates.contactUserEs;
+    var userEnTplFn = contactTemplates.contactUserEn;
 
     var adminHtml = layoutFn(adminTplFn(name, email, phone || "", message), "es");
     var adminText =
