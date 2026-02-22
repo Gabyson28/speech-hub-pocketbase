@@ -527,14 +527,14 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
     var userEsTplFn = (typeof contactUserEs === "function")
       ? contactUserEs
       : function(n) {
-          return "<p style=\"font-size:20px;font-weight:700\">Hola, " + n + " 👋</p>" +
+          return "<p style=\"font-size:20px;font-weight:700\">Hola, " + n + "</p>" +
             "<p>Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto.</p>";
         };
 
     var userEnTplFn = (typeof contactUserEn === "function")
       ? contactUserEn
       : function(n) {
-          return "<p style=\"font-size:20px;font-weight:700\">Hello, " + n + " 👋</p>" +
+          return "<p style=\"font-size:20px;font-weight:700\">Hello, " + n + "</p>" +
             "<p>Thanks for reaching out. We received your message and will reply soon.</p>";
         };
 
