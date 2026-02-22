@@ -333,3 +333,13 @@ var contactUserEs = (name) => `
     <div class="signature-title">Patóloga del Habla</div>
   </div>
 `;
+
+// Explicit global registry shared across hook files.
+var __pbRoot = (typeof globalThis !== "undefined") ? globalThis : this;
+if (!__pbRoot.__speechHubTemplates) {
+  __pbRoot.__speechHubTemplates = {};
+}
+__pbRoot.__speechHubTemplates.emailLayout = emailLayout;
+__pbRoot.__speechHubTemplates.contactAdmin = contactAdmin;
+__pbRoot.__speechHubTemplates.contactUserEn = contactUserEn;
+__pbRoot.__speechHubTemplates.contactUserEs = contactUserEs;

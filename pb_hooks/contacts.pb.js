@@ -146,72 +146,21 @@ routerAdd("POST", "/api/speech-hub/contact", (c) => {
   };
 
   try {
-    // Use global template functions when available; otherwise use local styled fallbacks.
-    var layoutFn = typeof emailLayout === "function"
-      ? emailLayout
-      : function(content, lang) {
-          var title = lang === "es" ? "Patologa del Habla" : "Speech-Language Pathologist";
-          var footerNote = lang === "es"
-            ? "Este correo fue enviado automaticamente. Por favor no respondas directamente a este mensaje."
-            : "This email was sent automatically. Please do not reply directly to this message.";
-          var websiteUrl = "https://carelimartinezphl.com";
-          return (
-            "<!DOCTYPE html><html><head><meta charset=\"UTF-8\" />" +
-            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>" +
-            "<style>" +
-            "body{margin:0;background:#eef4f5;font-family:Arial,sans-serif;color:#1e3040;padding:16px;}" +
-            ".wrapper{max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(30,60,80,0.12);}" +
-            ".header{background:linear-gradient(135deg,#2a8f6f 0%,#2e9e82 50%,#2b9bb5 100%);padding:28px 24px;text-align:center;color:#ffffff;}" +
-            ".header-name{font-size:22px;font-weight:700;line-height:1.2;}" +
-            ".header-title{font-size:12px;opacity:0.9;letter-spacing:0.4px;margin-top:6px;text-transform:uppercase;}" +
-            ".content{padding:28px 24px 20px;}" +
-            ".footer{background:#f0f6f7;border-top:1px solid #d8e8ea;padding:16px 24px;text-align:center;color:#6b8a96;font-size:12px;line-height:1.6;}" +
-            ".footer a{color:#2a8f6f;text-decoration:none;}" +
-            ".footer-divider{width:40px;height:2px;background:linear-gradient(90deg,#2a8f6f,#2b9bb5);margin:8px auto;border-radius:2px;}" +
-            "</style>" +
-            "</head><body><div class=\"wrapper\"><div class=\"header\">" +
-            "<div class=\"header-name\">Careli Martinez Aquino, CCC-SLP</div>" +
-            "<div class=\"header-title\">" + title + "</div>" +
-            "</div><div class=\"content\">" + content + "</div>" +
-            "<div class=\"footer\"><div class=\"footer-divider\"></div>" +
-            "<div><a href=\"" + websiteUrl + "\">carelimartinezphl.com</a></div>" +
-            "<div>" + footerNote + "</div></div></div></body></html>"
-          );
-        };
+    var __pbRoot = (typeof globalThis !== "undefined") ? globalThis : this;
+    var templateRegistry = __pbRoot.__speechHubTemplates || {};
+    var layoutFn = templateRegistry.emailLayout;
+    var adminTplFn = templateRegistry.contactAdmin;
+    var userEsTplFn = templateRegistry.contactUserEs;
+    var userEnTplFn = templateRegistry.contactUserEn;
 
-    var adminTplFn = typeof contactAdmin === "function"
-      ? contactAdmin
-      : function(n, e, p, m) {
-          return (
-            "<h2 style=\"margin:0 0 18px;font-size:22px;\">Nuevo mensaje de contacto</h2>" +
-            "<p style=\"margin:0 0 8px;\"><strong>Nombre:</strong> " + n + "</p>" +
-            "<p style=\"margin:0 0 8px;\"><strong>Correo:</strong> " + e + "</p>" +
-            "<p style=\"margin:0 0 14px;\"><strong>Telefono:</strong> " + (p || "N/A") + "</p>" +
-            "<div style=\"background:#f0f6f7;border-radius:8px;padding:12px 14px;line-height:1.6;\">" +
-            "<strong>Mensaje:</strong><br/>" + m +
-            "</div>"
-          );
-        };
-
-    var userEsTplFn = typeof contactUserEs === "function"
-      ? contactUserEs
-      : function(n) {
-          return (
-            "<p style=\"font-size:20px;font-weight:700;margin:0 0 14px;\">Hola, " + n + "</p>" +
-            "<p style=\"margin:0 0 12px;line-height:1.7;\">Gracias por comunicarte. Recibimos tu mensaje y te responderemos pronto.</p>" +
-            "<p style=\"margin:0;line-height:1.7;\">Generalmente respondemos dentro de 1 a 2 dias habiles.</p>"
-          );
-        };
-
-    var userEnTplFn = typeof contactUserEn === "function"
-      ? contactUserEn
-      : function(n) {
-          return (
-            "<p style=\"font-size:20px;font-weight:700;margin:0 0 14px;\">Hello, " + n + "</p>" +
-            "<p style=\"margin:0 0 12px;line-height:1.7;\">Thanks for reaching out. We received your message and will reply soon.</p>" +
-            "<p style=\"margin:0;line-height:1.7;\">We usually respond within 1-2 business days.</p>"
-          );
-        };
+    if (
+      typeof layoutFn !== "function" ||
+      typeof adminTplFn !== "function" ||
+      typeof userEsTplFn !== "function" ||
+      typeof userEnTplFn !== "function"
+    ) {
+      throw new Error("Template registry missing required functions");
+    }
 
     var adminHtml = layoutFn(adminTplFn(name, email, phone || "", message), "es");
     var adminText =
