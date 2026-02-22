@@ -242,14 +242,14 @@ var contactUserEn = function(name) {
     }
   </style>
 
-  <p class="greeting">Hello, ${name} 👋</p>
+  <p class="greeting">Hello, ${name}</p>
 
   <p class="message-body">
     Thank you for reaching out! I have received your message and will get back to you as soon as possible.
   </p>
 
-  <div class="highlight-box">
-    <p>
+  <div style="background:#f0faf7;border-left:4px solid #2a8f6f;border-radius:0 8px 8px 0;padding:16px 20px;margin:24px 0;">
+    <p style="font-size:14px;color:#2a6655;line-height:1.6;margin:0;">
       I typically respond within <strong>1–2 business days</strong>. If your matter is urgent,
       please feel free to contact me directly through the website.
     </p>
@@ -319,14 +319,14 @@ var contactUserEs = function(name) {
     }
   </style>
 
-  <p class="greeting">Hola, ${name} 👋</p>
+  <p class="greeting">Hola, ${name}</p>
 
   <p class="message-body">
     ¡Gracias por comunicarte! He recibido tu mensaje y me pondré en contacto contigo a la brevedad posible.
   </p>
 
-  <div class="highlight-box">
-    <p>
+  <div style="background:#f0faf7;border-left:4px solid #2a8f6f;border-radius:0 8px 8px 0;padding:16px 20px;margin:24px 0;">
+    <p style="font-size:14px;color:#2a6655;line-height:1.6;margin:0;">
       Generalmente respondo dentro de <strong>1 a 2 días hábiles</strong>. Si tu consulta es urgente,
       no dudes en contactarme directamente a través del sitio web.
     </p>
